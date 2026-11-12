@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apricode Games</title>
+<meta name="theme-color" content="#ff9d7a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Apricode Games">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="theme.css">
+<style>
+body{background:linear-gradient(#ffe6d6 0,#ffc9aa 55%,#ffa987 100%) fixed;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);overflow-x:hidden}
+.fl{position:fixed;font-size:34px;opacity:.35;pointer-events:none;animation:fl 7s ease-in-out infinite alternate;z-index:0}
+@keyframes fl{to{transform:translateY(-22px) rotate(14deg)}}
+main{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:22px 18px 30px}
+header{display:flex;align-items:center;gap:14px}
+.logo{width:68px;height:68px;border-radius:20px;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer;transition:transform .15s}
+.logo:active{transform:scale(.88) rotate(-8deg)}
+h1{margin:0;font-size:42px;line-height:1;font-weight:900;letter-spacing:-1px;color:#7a2a14;text-shadow:0 3px 0 #fff}
+header p{margin:5px 0 0;font-weight:900;letter-spacing:6px;font-size:13px;color:#c2583a}
+.lead{margin:26px 4px 14px;font-size:21px;font-weight:900}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.gc{display:flex;flex-direction:column;gap:3px;padding:10px 10px 14px;border-radius:26px;background:#fff;border:3px solid var(--ink);box-shadow:0 6px 0 var(--ink);color:inherit;text-decoration:none;transition:transform .1s,box-shadow .1s;animation:cin .55s cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(var(--i)*70ms)}
+@keyframes cin{from{opacity:0;transform:translateY(30px) scale(.8)}to{opacity:1;transform:none}}
+a.gc:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
+.art{height:118px;border-radius:18px;border:3px solid var(--ink);display:grid;place-items:center;margin-bottom:8px;overflow:hidden}
+.em{font-size:58px;line-height:1;display:inline-block;animation:wob 2.6s ease-in-out infinite}
+@keyframes wob{50%{transform:rotate(8deg) scale(1.08)}}
+.gc b{font-size:18px;font-weight:900;padding:0 4px}
+.gc small{font-size:13px;font-weight:700;color:#9a5a42;padding:0 4px}
+.gc.soon{background:rgba(255,255,255,.45);border-style:dashed;box-shadow:none;opacity:.8}
+.gc.soon .art{background:rgba(255,255,255,.4);border-style:dashed}
+#inst{display:none;margin-top:24px}
+#insthint{display:none;margin:18px 0 0;padding:10px 14px;border-radius:14px;background:#fff;border:3px solid var(--ink);font-weight:700;font-size:14px;text-align:center}
+footer{margin-top:28px;text-align:center;font-size:13px;font-weight:800;color:#a8583a}
+</style>
+</head>
+<body>
+<span class="fl" style="left:6%;top:14%">🎈</span><span class="fl" style="right:8%;top:30%;animation-delay:-2s">⭐</span><span class="fl" style="left:10%;top:60%;animation-delay:-4s">🍉</span><span class="fl" style="right:6%;top:74%;animation-delay:-1s">🍕</span>
+<main>
+  <header>
+    <img class="logo" id="logo" src="icon-192.png" alt="Apricode">
+    <div><h1>Apricode</h1><p>GAMES</p></div>
+  </header>
+  <p class="lead">Pick a game to play</p>
+  <section class="grid">
+    <a class="gc" style="--i:0" href="flappy.html">
+      <span class="art" style="background:linear-gradient(#bfe9f5,#eaf8fc)"><span class="em">🎈</span></span>
+      <b>Flappy Fly</b><small>Keep the balloon on the wire</small>
+    </a>
+    <a class="gc" style="--i:1" href="connect4.html">
+      <span class="art" style="background:linear-gradient(#b867d6,#4a54c4)">
+        <svg width="104" height="88" viewBox="0 0 104 88"><rect x="2" y="2" width="100" height="84" rx="16" fill="#0aa5f5" stroke="#1b1b1b" stroke-width="4"/>
+        <g fill="#43507f"><circle cx="22" cy="22" r="10"/><circle cx="52" cy="22" r="10"/><circle cx="82" cy="22" r="10"/><circle cx="22" cy="44" r="10"/><circle cx="82" cy="44" r="10"/></g>
+        <circle cx="52" cy="44" r="10" fill="#ffc21a"/><circle cx="22" cy="66" r="10" fill="#ff3b30"/><circle cx="52" cy="66" r="10" fill="#ff3b30"/><circle cx="82" cy="66" r="10" fill="#ffc21a"/></svg>
+      </span>
+      <b>Four in a Row</b><small>vs Robot or 2 players</small>
+    </a>
+    <a class="gc" style="--i:2" href="spot.html">
+      <span class="art" style="background:linear-gradient(#7c5cff 50%,#ff9d7a 50%)">
+        <svg width="104" height="104" viewBox="0 0 104 104"><circle cx="30" cy="28" r="22" fill="#fff" stroke="#1b1b1b" stroke-width="4"/><circle cx="74" cy="76" r="22" fill="#fff" stroke="#1b1b1b" stroke-width="4"/><text x="30" y="37" font-size="26" text-anchor="middle">🐙</text><text x="74" y="85" font-size="26" text-anchor="middle">🍕</text></svg>
+      </span>
+      <b>Spot Match</b><small>Find it before time runs out</small>
+    </a>
+    <a class="gc" style="--i:3" href="checkers.html">
+      <span class="art" style="background:#ffe3c8">
+        <svg width="104" height="104" viewBox="0 0 104 104"><rect x="4" y="4" width="96" height="96" fill="#ffe3c8" stroke="#1b1b1b" stroke-width="4"/><g fill="#b85c3c"><rect x="28" y="4" width="24" height="24"/><rect x="76" y="4" width="24" height="24"/><rect x="4" y="28" width="24" height="24"/><rect x="52" y="28" width="24" height="24"/><rect x="28" y="52" width="24" height="24"/><rect x="76" y="52" width="24" height="24"/><rect x="4" y="76" width="24" height="24"/><rect x="52" y="76" width="24" height="24"/></g><circle cx="40" cy="40" r="10" fill="#6c4ee0" stroke="#1b1b1b" stroke-width="3"/><circle cx="64" cy="64" r="10" fill="#ff4d6d" stroke="#1b1b1b" stroke-width="3"/><circle cx="16" cy="88" r="10" fill="#ff4d6d" stroke="#1b1b1b" stroke-width="3"/></svg>
+      </span>
+      <b>Checkers</b><small>vs Robot or 2 players</small>
+    </a>
+    <a class="gc" style="--i:4" href="mergefruits.html">
+      <span class="art" style="background:linear-gradient(#ffd9e2,#ffb3c6)"><span class="em">🍉</span></span>
+      <b>Merge Fruits</b><small>Merge the fruits</small>
+    </a>
+    <div class="gc soon" style="--i:5">
+      <span class="art"><span class="em">✨</span></span>
+      <b>More coming</b><small>Stay tuned</small>
+    </div>
+  </section>
+  <button class="big" id="inst">📲 Install app</button>
+  <p id="insthint">To install: tap Share, then Add to Home Screen.</p>
+  <footer>© Apricode</footer>
+</main>
+<script src="fx.js"></script>
+<script>
+AP.autoTap();
+document.getElementById('logo').addEventListener('click',function(){AP.sfx.win();AP.confetti(110);AP.vib(40)});
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

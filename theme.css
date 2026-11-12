@@ -1,0 +1,23 @@
+/* Shared Apricode look: bold outlines, bouncy buttons, pop-in cards. */
+:root{--ink:#3a1d12;--coral:#ff5d6c;--peach:#ff9d7a;--purple:#7c5cff;--sun:#ffc21a;--mint:#2ec4b6;--cream:#fff3e6;box-sizing:border-box}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.big{font:inherit;font-weight:900;font-size:20px;color:#fff;border:3px solid var(--ink);border-radius:20px;padding:14px 20px;background:var(--coral);box-shadow:0 5px 0 var(--ink);cursor:pointer;transition:transform .08s,box-shadow .08s;text-decoration:none;display:block;text-align:center;width:100%}
+.big:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.big.alt{background:var(--purple)}
+.big.sun{background:var(--sun);color:var(--ink)}
+.big.sm{font-size:16px;padding:11px 16px}
+.card{background:#fff;border:3px solid var(--ink);border-radius:28px;box-shadow:0 8px 0 var(--ink);padding:22px 18px;width:100%;max-width:340px;text-align:center;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:32px;font-weight:900;line-height:1.05}
+.card p{margin:0;font-weight:700;color:#7a4a38}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;font:inherit;font-weight:900;font-size:13px;padding:10px 2px;border:3px solid var(--ink);border-radius:14px;background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.seg button.sel{background:var(--sun)}
+.ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(58,29,18,.55);z-index:20;padding:20px}
+.ov.show{display:flex;animation:ovin .35s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes ovin{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:none}}
+.ib{width:46px;height:46px;border:3px solid var(--ink);border-radius:14px;background:#fff;box-shadow:0 4px 0 var(--ink);font-size:22px;cursor:pointer;display:grid;place-items:center;text-decoration:none;color:var(--ink);padding:0;flex:none}
+.ib:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.lnk{color:var(--ink);font-weight:800;text-decoration:underline;font-size:14px}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}

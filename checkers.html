@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Checkers · Apricode Games</title>
+<meta name="theme-color" content="#ff9d7a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="theme.css">
+<style>
+body{background:linear-gradient(#ffe6d0,#ffc09e 60%,#ff9d7a) fixed;min-height:100vh;min-height:100dvh}
+#app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;gap:10px}
+.top h1{flex:1;margin:0;font-size:28px;font-weight:900}
+.plr{display:flex;gap:10px}
+.pc{flex:1;display:flex;gap:10px;align-items:center;background:#fff;border:3px solid var(--ink);border-radius:18px;padding:8px 10px;box-shadow:0 4px 0 var(--ink);opacity:.72;transition:.2s}
+.pc.on{opacity:1;transform:translateY(-3px);background:var(--sun)}
+.dot{width:30px;height:30px;border-radius:50%;border:3px solid #2a140c;flex:none}
+.d1{background:radial-gradient(circle at 35% 30%,#ffa5b2,#ff4d6d)}
+.d2{background:radial-gradient(circle at 35% 30%,#bfaeff,#6c4ee0)}
+.pc b{display:block;font-size:17px}
+.pc small{font-weight:700;color:#7a4a38}
+#msg{text-align:center;font-weight:900;font-size:18px;min-height:24px}
+#bw{display:grid;place-items:center}
+#board{position:relative;width:min(100%,calc(100dvh - 310px));min-width:270px;aspect-ratio:1;border:6px solid var(--ink);border-radius:18px;box-shadow:0 8px 0 var(--ink);background:conic-gradient(#b85c3c 0 25%,#ffe3c8 0 50%,#b85c3c 0 75%,#ffe3c8 0) 0 0/25% 25%;overflow:hidden;touch-action:manipulation}
+.pp{position:absolute;width:12.5%;height:12.5%;padding:1.3%;transition:left .28s cubic-bezier(.3,1.3,.5,1),top .28s cubic-bezier(.3,1.3,.5,1),transform .25s,opacity .25s;pointer-events:none}
+.pp i{display:block;width:100%;height:100%;border-radius:50%;border:3px solid #2a140c;box-shadow:0 3px 0 #2a140c,inset 0 -5px 0 rgba(0,0,0,.16);position:relative}
+.pp.o1 i{background:radial-gradient(circle at 35% 30%,#ffa5b2,#ff4d6d 62%)}
+.pp.o2 i{background:radial-gradient(circle at 35% 30%,#bfaeff,#6c4ee0 62%)}
+.pp.k i::after{content:'👑';position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--cell,40px)*.48)}
+.pp.can i{animation:nudge 1s ease-in-out infinite}
+.pp.sel{z-index:3}
+.pp.sel i{box-shadow:0 0 0 4px var(--sun),0 3px 0 #2a140c;transform:translateY(-4px)}
+.pp.gone{opacity:0;transform:scale(.2)}
+.pp.shake i{animation:shk .35s}
+.tg{position:absolute;width:12.5%;height:12.5%;display:grid;place-items:center;pointer-events:none}
+.tg::after{content:'';width:34%;height:34%;border-radius:50%;background:var(--sun);border:3px solid #2a140c;animation:pls .5s ease-in-out infinite alternate}
+@keyframes nudge{50%{transform:translateY(-3px)}}
+@keyframes pls{to{transform:scale(1.3)}}
+@keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.bar{display:flex;gap:10px;margin-top:auto}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <a class="ib" href="./" aria-label="Home">🏠</a>
+    <h1>Checkers</h1>
+    <button class="ib" id="rs" aria-label="Restart">↻</button>
+    <button class="ib" id="snd" aria-label="Sound">🔊</button>
+  </div>
+  <div class="plr">
+    <div class="pc" id="p2"><span class="dot d2"></span><div><b id="n2">Robot</b><small id="k2">12 left</small></div></div>
+    <div class="pc" id="p1"><span class="dot d1"></span><div><b id="n1">You</b><small id="k1">12 left</small></div></div>
+  </div>
+  <div id="msg"></div>
+  <div id="bw"><div id="board"></div></div>
+  <div class="bar"><button class="big alt sm" id="bMode">🎮 Change mode</button></div>
+</div>
+
+<div class="ov show" id="menu"><div class="card">
+  <h2>Checkers</h2>
+  <p>Jump over your rivals’ pieces. Captures are a must!</p>
+  <button class="big" id="vsBot">🤖 Play vs Robot</button>
+  <div class="seg" id="seg"><button>Easy</button><button>Medium</button><button>Hard</button></div>
+  <button class="big alt" id="vs2">👥 2 Players · same phone</button>
+  <a class="lnk" href="./">← Back to Apricode Games</a>
+</div></div>
+
+<div class="ov" id="end"><div class="card">
+  <h2 id="eT"></h2>
+  <button class="big" id="again">Play again</button>
+  <button class="big alt" id="chg">Change mode</button>
+  <a class="lnk" href="./">← Apricode Games</a>
+</div></div>
+
+<script src="fx.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const LS={g(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},s(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const UP=[[-1,-1],[-1,1]],DN=[[1,-1],[1,1]],ALL=UP.concat(DN);
+
+/* ---------- rules ---------- */
+const ownP=(v,p)=>p===1?(v===1||v===3):(v===2||v===4);
+const dirs=v=>v>2?ALL:(v===1?UP:DN);
+function jmp(b,start,i,pc,caps,path,out){
+  const p=(pc===1||pc===3)?1:2,r=i>>3,c=i&7;let found=false;
+  for(const d of dirs(pc)){
+    const lr=r+2*d[0],lc=c+2*d[1];if(lr<0||lr>7||lc<0||lc>7)continue;
+    const m=(r+d[0])*8+c+d[1],l=lr*8+lc,mv=b[m];
+    if(mv&&!ownP(mv,p)&&!caps.includes(m)&&(!b[l]||l===start)){
+      found=true;
+      const crown=pc<3&&((p===1&&lr===0)||(p===2&&lr===7));
+      if(crown)out.push({path:path.concat(l),caps:caps.concat(m)});
+      else jmp(b,start,l,pc,caps.concat(m),path.concat(l),out);
+    }
+  }
+  if(!found&&caps.length)out.push({path:path,caps:caps});
+}
+function moves(b,p){
+  const J=[],S=[];
+  for(let i=0;i<64;i++){const v=b[i];if(v&&ownP(v,p))jmp(b,i,i,v,[],[i],J)}
+  if(J.length)return J;
+  for(let i=0;i<64;i++){
+    const v=b[i];if(!v||!ownP(v,p))continue;const r=i>>3,c=i&7;
+    for(const d of dirs(v)){const rr=r+d[0],cc=c+d[1];if(rr<0||rr>7||cc<0||cc>7)continue;const t=rr*8+cc;if(!b[t])S.push({path:[i,t],caps:[]})}
+  }
+  return S;
+}
+function apply(b,m){
+  const nb=b.slice();let pc=nb[m.path[0]];nb[m.path[0]]=0;
+  for(const x of m.caps)nb[x]=0;
+  const e=m.path[m.path.length-1],r=e>>3;
+  if(pc===1&&r===0)pc=3;else if(pc===2&&r===7)pc=4;
+  nb[e]=pc;return nb;
+}
+
+/* ---------- robot ---------- */
+function evalB(b,me){
+  let s=0;
+  for(let i=0;i<64;i++){
+    const v=b[i];if(!v)continue;const r=i>>3,k=v>2;
+    let val=k?170:100;
+    if(!k)val+=(v===1?7-r:r)*3;
+    val+=(3.5-Math.abs(3.5-(i&7)))*1.5;
+    s+=ownP(v,me)?val:-val;
+  }
+  return s;
+}
+function search(b,p,d,a,be,me){
+  const ms=moves(b,p);
+  if(!ms.length)return p===me?-1e5-d:1e5+d;
+  if(d===0)return evalB(b,me);
+  let v=p===me?-1e9:1e9;
+  for(const m of ms){
+    const s=search(apply(b,m),3-p,d-1,a,be,me);
+    if(p===me){if(s>v)v=s;if(v>a)a=v}else{if(s<v)v=s;if(v<be)be=v}
+    if(a>=be)break;
+  }
+  return v;
+}
+function pickBot(b,diff){
+  const ms=moves(b,2);
+  if(diff===0&&Math.random()<.35)return ms[(Math.random()*ms.length)|0];
+  const depth=[2,4,7][diff];let best=-1e9,bm=[];
+  for(const m of ms){
+    const s=search(apply(b,m),1,depth-1,-1e9,1e9,2);
+    if(s>best){best=s;bm=[m]}else if(s===best)bm.push(m);
+  }
+  return bm[(Math.random()*bm.length)|0];
+}
+/* ---------- ui ---------- */
+const board=$('board');
+let b,pid,turn=1,over=true,busy=false,mode='bot',starter=2,sel=null,legal=[],quiet=0,capFlag=false,gen=0;
+let diff=parseInt(LS.g('ck_diff','1'),10);if(!(diff>=0&&diff<=2))diff=1;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function cellPx(){board.style.setProperty('--cell',board.clientWidth/8+'px')}
+window.addEventListener('resize',cellPx);
+function posStyle(p){p.el.style.left=(p.idx&7)*12.5+'%';p.el.style.top=(p.idx>>3)*12.5+'%'}
+function mk(idx,v){
+  const el=document.createElement('div'),o=(v===1||v===3)?1:2;
+  el.className='pp o'+o+(v>2?' k':'');el.innerHTML='<i></i>';
+  const p={el,idx};posStyle(p);board.appendChild(el);return p;
+}
+function setup(){
+  board.innerHTML='';b=new Array(64).fill(0);pid=new Array(64).fill(null);
+  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+    if((r+c)%2!==1)continue;const i=r*8+c;
+    if(r<3)b[i]=2;else if(r>4)b[i]=1;
+    if(b[i])pid[i]=mk(i,b[i]);
+  }
+  cellPx();
+}
+function clearHints(){board.querySelectorAll('.tg').forEach(e=>e.remove());board.querySelectorAll('.sel').forEach(e=>e.classList.remove('sel'))}
+function showHints(){
+  clearHints();if(!sel)return;
+  pid[sel.pos].el.classList.add('sel');const seen={};
+  sel.cands.forEach(m=>{const t=m.path[sel.step];if(seen[t])return;seen[t]=1;const d=document.createElement('div');d.className='tg';d.style.left=(t&7)*12.5+'%';d.style.top=(t>>3)*12.5+'%';board.appendChild(d)});
+}
+function markCan(){
+  board.querySelectorAll('.can').forEach(e=>e.classList.remove('can'));
+  if(over||(mode==='bot'&&turn===2))return;
+  legal.forEach(m=>{const p=pid[m.path[0]];if(p)p.el.classList.add('can')});
+}
+function counts(){
+  let a=0,c=0;for(const v of b){if(!v)continue;if(v===1||v===3)a++;else c++}
+  $('k1').textContent=a+' left';$('k2').textContent=c+' left';
+}
+function names(){
+  $('n1').textContent=mode==='bot'?'You':'Player 1';
+  $('n2').textContent=mode==='bot'?'Robot':'Player 2';
+}
+function turnUI(){
+  $('p1').classList.toggle('on',!over&&turn===1);$('p2').classList.toggle('on',!over&&turn===2);
+  if(over)return;
+  const must=legal.length&&legal[0].caps.length?' · you must capture!':'';
+  $('msg').textContent=mode==='bot'?(turn===1?'Your turn'+must:'Robot is thinking…'):('Player '+turn+'’s turn'+must);
+}
+function movePiece(from,to,cap){
+  const p=pid[from];pid[from]=null;pid[to]=p;b[to]=b[from];b[from]=0;p.idx=to;posStyle(p);AP.sfx.move();
+  if(cap!==undefined){
+    const q=pid[cap];pid[cap]=null;b[cap]=0;capFlag=true;
+    if(q){q.el.classList.add('gone');setTimeout(()=>q.el.remove(),300)}
+    AP.vib(25);AP.sfx.pop();
+  }
+}
+function finishTurn(to){
+  const v=b[to],r=to>>3;
+  if((v===1&&r===0)||(v===2&&r===7)){b[to]=v+2;pid[to].el.classList.add('k');capFlag=true;AP.sfx.good()}
+  clearHints();sel=null;quiet=capFlag?0:quiet+1;capFlag=false;
+  turn=3-turn;legal=moves(b,turn);counts();
+  if(!legal.length){endGame(3-turn);return}
+  if(quiet>=60){endGame(0);return}
+  turnUI();markCan();
+  if(mode==='bot'&&turn===2)botTurn();
+}
+function botTurn(){
+  busy=true;turnUI();const g0=gen;
+  setTimeout(async()=>{
+    if(g0!==gen)return;
+    const m=pickBot(b,diff);let pos=m.path[0];
+    for(let k=1;k<m.path.length;k++){movePiece(pos,m.path[k],m.caps[k-1]);pos=m.path[k];await wait(330);if(g0!==gen)return}
+    busy=false;finishTurn(pos);
+  },500);
+}
+function selectPiece(i){
+  const c=legal.filter(m=>m.path[0]===i);
+  if(!c.length){
+    const p=pid[i];
+    if(p&&ownP(b[i],turn)){AP.sfx.bad();p.el.classList.remove('shake');void p.el.offsetWidth;p.el.classList.add('shake');
+      $('msg').textContent=legal[0].caps.length?'You must capture!':'That piece can’t move'}
+    return false;
+  }
+  sel={cands:c,step:1,pos:i};showHints();AP.sfx.pop();return true;
+}
+function tapSquare(i){
+  if(busy||over||(mode==='bot'&&turn===2))return;
+  if(sel){
+    const c=sel.cands.filter(m=>m.path[sel.step]===i);
+    if(c.length){
+      movePiece(sel.pos,i,c[0].caps[sel.step-1]);sel.pos=i;
+      const next=c.filter(m=>m.path.length>sel.step+1);
+      if(next.length){sel.cands=next;sel.step++;showHints()}else finishTurn(i);
+      return;
+    }
+    if(sel.step===1){clearHints();sel=null;selectPiece(i)}
+    return;
+  }
+  selectPiece(i);
+}
+board.addEventListener('pointerdown',e=>{
+  const R=board.getBoundingClientRect(),x=e.clientX-R.left-board.clientLeft,y=e.clientY-R.top-board.clientTop;
+  const c=Math.floor(x/board.clientWidth*8),r=Math.floor(y/board.clientHeight*8);
+  if(c<0||c>7||r<0||r>7)return;e.preventDefault();tapSquare(r*8+c);
+});
+function endGame(w){
+  over=true;busy=true;turnUI();markCan();
+  const t=w===0?'🤝 It’s a draw!':mode==='bot'?(w===1?'🎉 You win!':'🤖 Robot wins!'):('🎉 Player '+w+' wins!');
+  $('msg').textContent=t.replace(/^\S+\s/,'');const g0=gen;
+  setTimeout(()=>{
+    if(g0!==gen)return;
+    if(w&&(mode==='two'||w===1)){AP.sfx.win();AP.confetti(140);AP.vib([50,40,50,40,120])}else AP.sfx.lose();
+    $('eT').textContent=t;$('end').classList.add('show');
+  },900);
+}
+function newGame(){
+  gen++;setup();over=false;busy=false;sel=null;quiet=0;capFlag=false;
+  starter=3-starter;turn=starter;legal=moves(b,turn);
+  $('end').classList.remove('show');counts();turnUI();markCan();
+  if(mode==='bot'&&turn===2)botTurn();
+}
+function startMode(m){mode=m;starter=2;names();$('menu').classList.remove('show');newGame()}
+function showMenu(){gen++;over=true;busy=false;$('end').classList.remove('show');$('menu').classList.add('show');turnUI()}
+$('vsBot').addEventListener('click',()=>startMode('bot'));
+$('vs2').addEventListener('click',()=>startMode('two'));
+[...$('seg').children].forEach((x,i)=>x.addEventListener('click',()=>{diff=i;LS.s('ck_diff',i);markSeg()}));
+function markSeg(){[...$('seg').children].forEach((x,i)=>x.classList.toggle('sel',i===diff))}
+$('rs').addEventListener('click',()=>{if(!$('menu').classList.contains('show'))newGame()});
+$('again').addEventListener('click',newGame);
+$('bMode').addEventListener('click',showMenu);$('chg').addEventListener('click',showMenu);
+function snd(){$('snd').textContent=AP.muted()?'🔇':'🔊'}
+$('snd').addEventListener('click',()=>{AP.setMuted(!AP.muted());snd()});
+markSeg();snd();names();setup();AP.autoTap();
+})();
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

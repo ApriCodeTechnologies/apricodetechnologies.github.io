@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Four in a Row · Apricode Games</title>
+<meta name="theme-color" content="#141420">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#0b0b14;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#app{max-width:520px;min-height:100vh;min-height:100dvh;margin:0 auto;display:flex;flex-direction:column;background:linear-gradient(#b867d6 0,#8f5ec8 36%,#2d4aa8 70%,#0a3a8c 100%);padding-bottom:env(safe-area-inset-bottom)}
+.top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:#141420;border-bottom:4px solid;border-image:linear-gradient(90deg,#00b7ff,#8a2be2,#ff7a00,#ffc400) 1}
+.top h1{flex:1;margin:0;font-size:13px;letter-spacing:2px;color:#cfd2e6;font-weight:800;text-transform:uppercase}
+.ib{width:46px;height:46px;border:0;border-radius:14px;display:grid;place-items:center;cursor:pointer;text-decoration:none}
+.ib svg{width:24px;height:24px}
+.ib.h{background:#12384a;color:#00b7ff}.ib.r{background:#2a1650;color:#a73cff}.ib.s{background:#3a1219;color:#ff3b55}.ib.sh{background:#3a2812;color:#ff9a00}
+.off .wv{display:none}
+.players{display:flex;justify-content:space-around;padding:20px 10px 8px}
+.pl{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:110px}
+.av{width:86px;height:86px;border-radius:22px;background:#fff;display:grid;place-items:center;border:6px solid;box-shadow:0 6px 0 rgba(0,0,0,.25);overflow:hidden;font-size:48px;line-height:1}
+.av.r{border-color:#ff2d2d}.av.y{border-color:#ffc21a}
+.av svg{width:70px;height:70px}
+.pl b{font-size:22px;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.wins{font-size:13px;font-weight:700;background:rgba(0,0,0,.25);padding:2px 10px;border-radius:10px}
+.tri{width:0;height:0;border:12px solid transparent;border-top:0;border-bottom:20px solid #fff;visibility:hidden}
+.pl.on .tri{visibility:visible;animation:bob .7s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-5px)}}
+#msg{text-align:center;font-weight:800;font-size:18px;min-height:26px;margin:2px 0 10px;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.bw{padding:0 8px}
+#board{display:grid;grid-template-columns:repeat(7,1fr);gap:clamp(5px,1.7vw,9px);padding:clamp(10px,3vw,16px);border-radius:30px;background:linear-gradient(#00c0ff,#0a98f2);border:4px solid #35cbff;box-shadow:0 8px 0 #0771c4,0 20px 30px rgba(0,0,0,.35);overflow:hidden}
+.c{position:relative;aspect-ratio:1;border-radius:50%;background:#43507f;box-shadow:inset 0 5px 8px rgba(0,0,0,.4),0 0 0 3px rgba(40,190,255,.9);cursor:pointer}
+.d{position:absolute;inset:0;border-radius:50%;animation:drop .5s both}
+.d.r{background:radial-gradient(circle at 35% 30%,#ff9a6c,#ff3b30 55%,#d01818);box-shadow:inset 0 0 0 7px rgba(255,255,255,.16),0 3px 5px rgba(0,0,0,.3)}
+.d.y{background:radial-gradient(circle at 35% 30%,#fff4a8,#ffc700 55%,#ff9e00);box-shadow:inset 0 0 0 7px rgba(255,255,255,.2),0 3px 5px rgba(0,0,0,.3)}
+.d.w{animation:pulse .6s ease-in-out infinite alternate}
+@keyframes drop{0%{transform:translateY(var(--f))}55%{transform:translateY(0)}70%{transform:translateY(-9%)}85%{transform:translateY(0)}92%{transform:translateY(-2%)}100%{transform:translateY(0)}}
+@keyframes pulse{to{transform:scale(1.1);box-shadow:0 0 0 4px #fff,0 0 22px 6px #fff}}
+.bar{display:flex;gap:10px;padding:18px 14px 22px}
+.bt{flex:1;font:inherit;font-weight:800;font-size:16px;padding:14px 10px;border:0;border-radius:18px;color:#fff;cursor:pointer;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3)}
+.bt:active,.big:active{transform:scale(.96)}
+.ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,30,.66);z-index:20;padding:20px}
+.ov.show{display:flex;animation:in .3s ease both}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card{width:100%;max-width:340px;text-align:center;padding:24px 20px;border-radius:28px;background:linear-gradient(#3b2a78,#1f2f78);border:1px solid rgba(255,255,255,.25);box-shadow:0 24px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:30px;font-weight:900}
+.card p{margin:0;color:#cfd2f0;font-weight:600}
+.big{font:inherit;font-weight:800;font-size:19px;padding:15px;border:0;border-radius:18px;color:#fff;cursor:pointer;background:linear-gradient(135deg,#ff7aa5,#ff4d7d);box-shadow:0 6px 18px rgba(255,77,125,.4);text-decoration:none;display:block}
+.big.alt{background:linear-gradient(135deg,#27c0ff,#1478e6);box-shadow:0 6px 18px rgba(20,120,230,.4)}
+.seg{display:flex;gap:4px;padding:4px;border-radius:16px;background:rgba(255,255,255,.12)}
+.seg button{flex:1;font:inherit;font-weight:800;font-size:14px;padding:9px 4px;border:0;border-radius:12px;background:transparent;color:#fff;cursor:pointer}
+.seg button.sel{background:#fff;color:#2a2a6a}
+.lnk{color:#cfd2f0;font-weight:700;text-decoration:none;font-size:14px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <h1>Four in a row</h1>
+    <a class="ib h" href="./" aria-label="Home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg></a>
+    <button class="ib r" id="bRestart" aria-label="Restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></button>
+    <button class="ib s" id="bSnd" aria-label="Sound"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="wv" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="ib sh" id="bShare" aria-label="Share"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8 11l8-5M8 13l8 5" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+  </div>
+  <div class="players">
+    <div class="pl" id="p1"><div class="av r"><svg viewBox="0 0 64 64"><circle cx="32" cy="22" r="12" fill="#9bbbe0"/><path d="M8 62c0-14 10-22 24-22s24 8 24 22z" fill="#9bbbe0"/></svg></div><b id="n1">You</b><span class="wins">Wins: <span id="s1">0</span></span><i class="tri"></i></div>
+    <div class="pl" id="p2"><div class="av y" id="av2"></div><b id="n2">Robot</b><span class="wins">Wins: <span id="s2">0</span></span><i class="tri"></i></div>
+  </div>
+  <div id="msg"></div>
+  <div class="bw"><div id="board" role="grid" aria-label="Game board"></div></div>
+  <div class="bar"><button class="bt" id="bAgain">↻ Restart</button><button class="bt" id="bMode">🎮 Change mode</button></div>
+</div>
+
+<div class="ov show" id="menu"><div class="card">
+  <h2>Four in a Row</h2>
+  <p>Connect four discs to win!</p>
+  <button class="big" id="vsBot">🤖 Play vs Robot</button>
+  <div class="seg" id="seg"><button>Easy</button><button>Medium</button><button>Hard</button></div>
+  <button class="big alt" id="vs2">👥 2 Players · same phone</button>
+  <a class="lnk" href="./">← Back to Apricode Games</a>
+</div></div>
+
+<div class="ov" id="end"><div class="card">
+  <h2 id="eT"></h2><p id="eM"></p>
+  <button class="big" id="again">Play again</button>
+  <button class="big alt" id="chg">Change mode</button>
+  <a class="lnk" href="./">← Apricode Games</a>
+</div></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const ls={g(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},s(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const DIRS=[[0,1],[1,0],[1,1],[1,-1]],ORD=[3,2,4,1,5,0,6];
+const PERSON='<svg viewBox="0 0 64 64"><circle cx="32" cy="22" r="12" fill="#9bbbe0"/><path d="M8 62c0-14 10-22 24-22s24 8 24 22z" fill="#9bbbe0"/></svg>';
+let g=new Array(42).fill(0),turn=1,over=true,busy=false,mode='bot',starter=2,scores=[0,0],timer=null,ac=null;
+let diff=parseInt(ls.g('c4_diff','1'),10);if(!(diff>=0&&diff<=2))diff=1;
+let muted=ls.g('c4_mute','0')==='1';
+
+/* ---------- sound ---------- */
+function snd(f,t,type,v,delay){if(muted)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const s=ac.currentTime+(delay||0),o=ac.createOscillator(),gn=ac.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,s);gn.gain.setValueAtTime(v||.12,s);gn.gain.exponentialRampToValueAtTime(.001,s+t);o.connect(gn);gn.connect(ac.destination);o.start(s);o.stop(s+t+.02)}catch(e){}}
+
+/* ---------- rules ---------- */
+function place(b,c,p){for(let r=5;r>=0;r--){const i=r*7+c;if(!b[i]){b[i]=p;return i}}return -1}
+function fourAt(b,i,p){const r=(i/7)|0,c=i%7;for(const d of DIRS){let n=1;for(let k=1;k<4;k++){const rr=r+d[0]*k,cc=c+d[1]*k;if(rr<0||rr>5||cc<0||cc>6||b[rr*7+cc]!==p)break;n++}for(let k=1;k<4;k++){const rr=r-d[0]*k,cc=c-d[1]*k;if(rr<0||rr>5||cc<0||cc>6||b[rr*7+cc]!==p)break;n++}if(n>=4)return true}return false}
+function winCells(b,i,p){const r=(i/7)|0,c=i%7;for(const d of DIRS){const L=[i];for(let k=1;k<4;k++){const rr=r+d[0]*k,cc=c+d[1]*k;if(rr<0||rr>5||cc<0||cc>6||b[rr*7+cc]!==p)break;L.push(rr*7+cc)}for(let k=1;k<4;k++){const rr=r-d[0]*k,cc=c-d[1]*k;if(rr<0||rr>5||cc<0||cc>6||b[rr*7+cc]!==p)break;L.push(rr*7+cc)}if(L.length>=4)return L}return null}
+
+/* ---------- robot ---------- */
+function evalB(b,me,op){
+  let s=0;for(let r=0;r<6;r++){const v=b[r*7+3];if(v===me)s+=3;else if(v===op)s-=3}
+  const W=(i,d)=>{let m=0,o=0;for(let k=0;k<4;k++){const v=b[i+d*k];if(v===me)m++;else if(v===op)o++}if(m&&o)return 0;if(m===3)return 5;if(m===2)return 2;if(o===3)return -6;if(o===2)return -2;return 0};
+  for(let r=0;r<6;r++)for(let c=0;c<4;c++)s+=W(r*7+c,1);
+  for(let r=0;r<3;r++){for(let c=0;c<7;c++)s+=W(r*7+c,7);for(let c=0;c<4;c++)s+=W(r*7+c,8);for(let c=3;c<7;c++)s+=W(r*7+c,6)}
+  return s;
+}
+function mm(b,d,a,be,max,me,op){
+  if(d===0)return evalB(b,me,op);
+  let any=false,v=max?-1e9:1e9;
+  for(const c of ORD){
+    if(b[c])continue;any=true;const p=max?me:op,i=place(b,c,p);let s;
+    if(fourAt(b,i,p))s=max?1e5+d:-1e5-d;else s=mm(b,d-1,a,be,!max,me,op);
+    b[i]=0;
+    if(max){if(s>v)v=s;if(v>a)a=v}else{if(s<v)v=s;if(v<be)be=v}
+    if(a>=be)break;
+  }
+  return any?v:0;
+}
+function pick(){
+  const moves=ORD.filter(c=>!g[c]);
+  if(diff===0&&Math.random()<.4)return moves[(Math.random()*moves.length)|0];
+  const depth=[2,4,6][diff],b=g.slice();let best=-1e9,bc=[];
+  for(const c of moves){
+    const i=place(b,c,2);let s;
+    if(fourAt(b,i,2))s=1e6;else s=mm(b,depth-1,-1e9,1e9,false,2,1);
+    b[i]=0;
+    if(s>best){best=s;bc=[c]}else if(s===best)bc.push(c);
+  }
+  return bc[(Math.random()*bc.length)|0];
+}
+
+/* ---------- board ---------- */
+const board=$('board'),cells=[];
+for(let i=0;i<42;i++){const c=document.createElement('div');c.className='c';c.dataset.c=i%7;board.appendChild(c);cells.push(c)}
+board.addEventListener('click',e=>{const c=e.target.closest('.c');if(c)play(+c.dataset.c)});
+window.addEventListener('keydown',e=>{if(/^[1-7]$/.test(e.key)&&!$('menu').classList.contains('show')&&!$('end').classList.contains('show'))play(+e.key-1)});
+
+function names(){
+  $('n1').textContent=mode==='bot'?'You':'Player 1';
+  $('n2').textContent=mode==='bot'?'Robot':'Player 2';
+  $('av2').innerHTML=mode==='bot'?'<span>🤖</span>':PERSON;
+  $('s1').textContent=scores[0];$('s2').textContent=scores[1];
+}
+function turnUI(){
+  $('p1').classList.toggle('on',!over&&turn===1);$('p2').classList.toggle('on',!over&&turn===2);
+  if(over)return;
+  $('msg').textContent=mode==='bot'?(turn===1?'Your turn':'Robot is thinking…'):('Player '+turn+'’s turn');
+}
+function newGame(){
+  clearTimeout(timer);g.fill(0);cells.forEach(c=>{c.innerHTML=''});
+  over=false;busy=false;starter=3-starter;turn=starter;
+  $('end').classList.remove('show');turnUI();
+  if(mode==='bot'&&turn===2)botTurn();
+}
+function startMode(m){mode=m;scores=[0,0];starter=2;names();$('menu').classList.remove('show');newGame()}
+function showMenu(){clearTimeout(timer);over=true;busy=false;$('end').classList.remove('show');$('menu').classList.add('show');turnUI()}
+
+function play(c){if(over||busy||(mode==='bot'&&turn===2))return;drop(c)}
+function botTurn(){busy=true;turnUI();timer=setTimeout(()=>{if(over)return;busy=false;drop(pick())},450)}
+function drop(c){
+  const i=place(g,c,turn);
+  if(i<0){snd(120,.15,'square',.1);return}
+  const r=(i/7)|0,d=document.createElement('div'),dur=.3+r*.07;
+  d.className='d '+(turn===1?'r':'y');d.style.setProperty('--f',-(r+1)*112+'%');d.style.animationDuration=dur+'s';
+  cells[i].appendChild(d);snd(170,.14,'triangle',.28,dur*.5);busy=true;
+  const wc=winCells(g,i,turn);
+  if(wc){finish(turn,wc);return}
+  if(g.every(Boolean)){finish(0,null);return}
+  turn=3-turn;turnUI();
+  timer=setTimeout(()=>{busy=false;if(!over&&mode==='bot'&&turn===2)botTurn()},dur*1000+80);
+}
+function finish(w,wc){
+  over=true;busy=true;turnUI();
+  if(w&&window.AP&&(mode==='two'||w===1)){AP.confetti(120);AP.vib([40,30,80])}
+  if(w){scores[w-1]++;names();wc.forEach(i=>cells[i].firstChild&&cells[i].firstChild.classList.add('w'))}
+  const t=w===0?'🤝 It’s a draw!':mode==='bot'?(w===1?'🎉 You win!':'🤖 Robot wins!'):('🎉 Player '+w+' wins!');
+  $('msg').textContent=t.replace(/^\S+\s/,'');
+  timer=setTimeout(()=>{
+    if(w){snd(660,.15,'square',.08);snd(880,.15,'square',.08,.15);snd(1320,.3,'square',.08,.3)}else snd(200,.3,'sawtooth',.08);
+    $('eT').textContent=t;$('eM').textContent=mode==='bot'?'Score: You '+scores[0]+' – '+scores[1]+' Robot':'Score: P1 '+scores[0]+' – '+scores[1]+' P2';
+    $('end').classList.add('show');
+  },1100);
+}
+
+/* ---------- buttons ---------- */
+$('vsBot').addEventListener('click',()=>startMode('bot'));
+$('vs2').addEventListener('click',()=>startMode('two'));
+[...$('seg').children].forEach((b,i)=>{b.addEventListener('click',()=>{diff=i;ls.s('c4_diff',i);markSeg()})});
+function markSeg(){[...$('seg').children].forEach((b,i)=>b.classList.toggle('sel',i===diff))}
+$('bRestart').addEventListener('click',newGame);$('bAgain').addEventListener('click',newGame);$('again').addEventListener('click',newGame);
+$('bMode').addEventListener('click',showMenu);$('chg').addEventListener('click',showMenu);
+$('bSnd').addEventListener('click',()=>{muted=!muted;ls.s('c4_mute',muted?'1':'0');$('bSnd').classList.toggle('off',muted)});
+$('bShare').addEventListener('click',()=>{
+  const url=new URL('./',location.href).href;
+  if(navigator.share)navigator.share({title:'Apricode Games',text:'Play Four in a Row!',url}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>{$('msg').textContent='Link copied!'}).catch(()=>{});
+});
+markSeg();names();$('bSnd').classList.toggle('off',muted);
+})();
+</script>
+<script src="fx.js"></script>
+<script src="pwa.js"></script>
+</body>
+</html>

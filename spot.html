@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Spot Match · Apricode Games</title>
+<meta name="theme-color" content="#7c5cff">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="theme.css">
+<style>
+html,body{height:100%;overflow:hidden;background:#1b1b1b}
+#app{max-width:560px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;background:#1b1b1b}
+.hud{flex:none;display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 12px 10px;background:#7c5cff}
+.tbar{flex:1;height:20px;background:rgba(255,255,255,.4);border:3px solid #1b1b1b;border-radius:12px;overflow:hidden}
+.tbar i{display:block;height:100%;width:100%;background:#4cd97b;transform-origin:left}
+.half{flex:1;min-height:0;display:grid;place-items:center;container-type:size}
+.half.t{background:#7c5cff}
+.half.b{background:#ff9d7a;padding-bottom:env(safe-area-inset-bottom)}
+.mid{flex:none;height:12px;background:#1b1b1b;position:relative;z-index:3}
+.pill{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border:3px solid #1b1b1b;border-radius:30px;padding:2px 14px;display:flex;gap:8px;align-items:center;font-weight:900;font-size:22px;box-shadow:0 4px 0 #1b1b1b;white-space:nowrap}
+.pill i{width:8px;height:8px;border-radius:50%;background:#1b1b1b}
+.pill b{min-width:20px;text-align:center}
+.bump{animation:bump .4s}
+@keyframes bump{50%{transform:scale(1.5)}}
+.cd{width:min(90cqw,calc(100cqh - 16px));aspect-ratio:1;border-radius:50%;background:#fff;border:6px solid #1b1b1b;position:relative;box-shadow:0 8px 0 rgba(0,0,0,.28)}
+.sy{position:absolute;font-size:calc(var(--z)*var(--u,3px));line-height:1;transform:translate(-50%,-50%) rotate(var(--r));cursor:pointer;animation:sin .35s cubic-bezier(.2,1.6,.4,1) both;filter:drop-shadow(2px 0 0 #1b1b1b) drop-shadow(-2px 0 0 #1b1b1b) drop-shadow(0 2px 0 #1b1b1b) drop-shadow(0 -2px 0 #1b1b1b)}
+@keyframes sin{from{transform:translate(-50%,-50%) rotate(var(--r)) scale(0)}to{transform:translate(-50%,-50%) rotate(var(--r)) scale(1)}}
+.cd.rev .sy:not(.hit){opacity:.3}
+.sy.hit{z-index:5;animation:hit .45s ease-in-out infinite alternate;filter:drop-shadow(2px 0 0 #1b1b1b) drop-shadow(-2px 0 0 #1b1b1b) drop-shadow(0 2px 0 #1b1b1b) drop-shadow(0 -2px 0 #1b1b1b) drop-shadow(0 0 12px #2fe36f)}
+@keyframes hit{from{transform:translate(-50%,-50%) rotate(var(--r)) scale(1)}to{transform:translate(-50%,-50%) rotate(var(--r)) scale(1.3)}}
+.sy.miss{animation:shk .4s;opacity:1!important}
+@keyframes shk{25%{transform:translate(-65%,-50%) rotate(var(--r))}75%{transform:translate(-35%,-50%) rotate(var(--r))}}
+#toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-weight:900;font-size:26px;background:#fff;border:3px solid #1b1b1b;border-radius:20px;padding:10px 18px;box-shadow:0 5px 0 #1b1b1b;z-index:10;pointer-events:none;white-space:nowrap}
+#toast.show{animation:tp 1.3s ease both}
+@keyframes tp{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}25%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+#dl{font-size:15px;font-weight:800;color:#7a4a38}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hud">
+    <a class="ib" href="./" aria-label="Home">🏠</a>
+    <div class="tbar"><i id="tf"></i></div>
+    <button class="ib" id="snd" aria-label="Sound">🔊</button>
+  </div>
+  <div class="half t"><div class="cd" id="c2"></div></div>
+  <div class="mid"><div class="pill"><span>🤖</span><b id="s2">0</b><i></i><b id="s1">0</b><span>🙂</span></div></div>
+  <div class="half b"><div class="cd" id="c1"></div></div>
+</div>
+<div id="toast"></div>
+
+<div class="ov show" id="start"><div class="card">
+  <h2>Spot Match</h2>
+  <p>One picture is on BOTH cards. Tap it before the time runs out!</p>
+  <p id="dl">Find it in time = you score. Miss it = the computer scores. First to 10 wins!</p>
+  <div class="seg" id="seg"><button>Easy · 10s</button><button>Medium · 6s</button><button>Hard · 3.5s</button></div>
+  <button class="big" id="go">Play</button>
+  <a class="lnk" href="./">← Apricode Games</a>
+</div></div>
+
+<div class="ov" id="end"><div class="card">
+  <h2 id="eT"></h2><p id="eM"></p>
+  <button class="big" id="again">Play again</button>
+  <button class="big alt" id="chg">Change difficulty</button>
+  <a class="lnk" href="./">← Apricode Games</a>
+</div></div>
+
+<script src="fx.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const EMO=['🐶','🐱','🐼','🦊','🐸','🐙','🦄','🐝','🐢','🦋','🐳','🦁','🐵','🐧','🐰','🍎','🍌','🍉','🍓','🍕','🍩','🍦','🚀','🌈','⭐','🌙','⚽','🎸','🎈','🎁','🧸','👑','🔥','💎','🍄','🌵','🌻','🚗','🎨','🍭'];
+const TARGET=10,TIMES=[10,6,3.5];
+let diff=parseInt((function(){try{return localStorage.getItem('spot_diff')}catch(e){return null}})()||'1',10);if(!(diff>=0&&diff<=2))diff=1;
+let s1=0,s2=0,state='idle',cur=null,t0=0,T=10,hid=0;
+const c1=$('c1'),c2=$('c2'),tf=$('tf');
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function render(card,list){
+  card.className='cd';card.innerHTML='';
+  const ci=(Math.random()*list.length)|0,ring=list.filter((_,i)=>i!==ci),off=Math.random()*6.2832;
+  const put=(e,x,y,z)=>{const s=document.createElement('span');s.className='sy';s.textContent=e;s.dataset.e=e;
+    s.style.cssText='left:'+x+'%;top:'+y+'%;--z:'+z+';--r:'+((Math.random()*60-30)|0)+'deg;animation-delay:'+(Math.random()*.15)+'s';card.appendChild(s)};
+  put(list[ci],50+Math.random()*4-2,50+Math.random()*4-2,26);
+  ring.forEach((e,i)=>{const a=off+i*6.2832/ring.length;put(e,50+Math.cos(a)*34+Math.random()*3-1.5,50+Math.sin(a)*34+Math.random()*3-1.5,17+Math.random()*4)});
+}
+function units(){[c1,c2].forEach(c=>c.style.setProperty('--u',c.clientWidth/100+'px'))}
+window.addEventListener('resize',units);
+
+function newRound(){
+  const p=shuffle(EMO.slice()),common=p[0];
+  cur={common};
+  render(c2,shuffle([common].concat(p.slice(1,8))));
+  render(c1,shuffle([common].concat(p.slice(8,15))));
+  units();T=TIMES[diff];t0=performance.now();state='play';tick();
+}
+function tick(){
+  if(state!=='play')return;
+  const e=(performance.now()-t0)/1000,f=Math.max(0,1-e/T);
+  tf.style.transform='scaleX('+f+')';
+  tf.style.background=f>.5?'#4cd97b':f>.25?'#ffc21a':'#ff4d4d';
+  if(e>=T){resolve('time');return}
+  requestAnimationFrame(tick);
+}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show')}
+function bump(id){const e=$(id);e.classList.remove('bump');void e.offsetWidth;e.classList.add('bump')}
+function resolve(kind,clicked){
+  if(state!=='play')return;state='rev';
+  const e=(performance.now()-t0)/1000;
+  document.querySelectorAll('.cd').forEach(c=>c.classList.add('rev'));
+  document.querySelectorAll('.sy').forEach(s=>{if(s.dataset.e===cur.common)s.classList.add('hit')});
+  if(kind==='ok'){s1++;bump('s1');AP.sfx.good();AP.vib(30);toast('Found it! '+e.toFixed(1)+'s ⚡')}
+  else{
+    s2++;bump('s2');AP.sfx.bad();
+    if(kind==='wrong'){clicked.classList.add('miss');AP.vib([60,40,60]);toast('Oops! 🤖 scores')}
+    else toast('⏰ Too slow! 🤖 scores');
+  }
+  $('s1').textContent=s1;$('s2').textContent=s2;
+  const done=s1>=TARGET||s2>=TARGET;
+  setTimeout(()=>{done?end():newRound()},kind==='ok'?900:1500);
+}
+function end(){
+  state='over';const w=s1>s2;
+  $('eT').textContent=w?'🎉 You win!':'🤖 Computer wins!';
+  $('eM').textContent='Final score: You '+s1+' – '+s2+' Computer';
+  $('end').classList.add('show');
+  if(w){AP.sfx.win();AP.confetti(140);AP.vib([50,40,50,40,120])}else AP.sfx.lose();
+}
+function begin(){
+  s1=s2=0;$('s1').textContent=0;$('s2').textContent=0;
+  $('start').classList.remove('show');$('end').classList.remove('show');
+  c1.innerHTML=c2.innerHTML='';tf.style.transform='scaleX(1)';tf.style.background='#4cd97b';
+  state='idle';setTimeout(newRound,350);
+}
+document.getElementById('app').addEventListener('pointerdown',e=>{
+  const s=e.target.closest('.sy');if(!s||state!=='play')return;
+  e.preventDefault();resolve(s.dataset.e===cur.common?'ok':'wrong',s);
+});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)hid=performance.now();else if(state==='play'&&hid){t0+=performance.now()-hid;hid=0}
+});
+
+[...$('seg').children].forEach((b,i)=>b.addEventListener('click',()=>{diff=i;try{localStorage.setItem('spot_diff',i)}catch(e){}mark()}));
+function mark(){[...$('seg').children].forEach((b,i)=>b.classList.toggle('sel',i===diff))}
+$('go').addEventListener('click',begin);$('again').addEventListener('click',begin);
+$('chg').addEventListener('click',()=>{state='idle';$('end').classList.remove('show');$('start').classList.add('show')});
+function snd(){$('snd').textContent=AP.muted()?'🔇':'🔊'}
+$('snd').addEventListener('click',()=>{AP.setMuted(!AP.muted());snd()});
+mark();snd();AP.autoTap();
+})();
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>
