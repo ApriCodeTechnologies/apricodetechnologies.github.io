@@ -1,5 +1,5 @@
 /* Change the number in CACHE every time you publish an update. */
-const CACHE = 'apricode-v12';
+const CACHE = 'apricode-v13';
 const FILES = ['./', './index.html', './flappy.html', './connect4.html', './mergefruits.html', './spot.html', './balldrop.html', './logo.png', './checkers.html', './fx.js', './theme.css', './pwa.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const OK = new Set(FILES.map(f => new URL(f, self.location).pathname));
 
