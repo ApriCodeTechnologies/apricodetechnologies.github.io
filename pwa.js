@@ -61,7 +61,7 @@
   var CFG = {
     enabled: true,   // false = never ask for a name
     until: '',       // optional last day, e.g. '2026-12-31' (nobody is asked after it)
-    endpoint: ''     // paste your Google Apps Script "web app" URL here
+    endpoint: 'https://script.google.com/macros/s/AKfycbzSUYzQICAP0De8Lk8RiVHDDKWM9YpG_Vr_z_kf1hoSdHVOucFwGHrLcxwPneq7bMD_TA/exec'     // paste your Google Apps Script "web app" URL here
   };
   if (!CFG.enabled) return;
   if (CFG.until && new Date() > new Date(CFG.until + 'T23:59:59')) return;
