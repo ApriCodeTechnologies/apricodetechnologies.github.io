@@ -115,8 +115,7 @@
     '<div class="c"><img src="logo.png" alt="ApriCode"><h2>Welcome! \uD83D\uDC4B</h2>' +
     '<p>Please write your name to start playing.</p>' +
     '<input id="apname" type="text" maxlength="30" placeholder="Your name" autocomplete="given-name" enterkeyhint="go">' +
-    '<div id="aperr"></div><button id="apgo">Let\u2019s play</button>' +
-    '<small>We save your name only to count how many people play.</small></div>';
+    '<div id="aperr"></div><button id="apgo">Let\u2019s play</button>';
   document.body.appendChild(g);
 
   var input = document.getElementById('apname'), err = document.getElementById('aperr');
