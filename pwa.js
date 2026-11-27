@@ -61,11 +61,10 @@
   var CFG = {
     enabled: true,   // false = never ask for a name
     until: '',       // optional last day, e.g. '2026-12-31' (nobody is asked after it)
-    version: 2,      // change this number (2 -> 3 ...) and every player is asked again
+    version: 3,      // change this number (2 -> 3 ...) and every player is asked again
     // Option A: any web address that accepts a JSON POST (Formspree, Firebase, your own server...)
-    endpoint: '',
-    // Option B: a Google Form (no Apps Script, no extra permissions needed)
-    form: { url: 'https://docs.google.com/forms/d/e/1FAIpQLSeZiQmZJ-WEAdfj6Ul1H6ufKnvpxkZU8ejVaWGW8gjYHCTLjg/formResponse?usp=publish-editor', name: '', id: '' }   // url = the form's .../formResponse address, name/id = its entry.123456 field names
+   endpoint: 'https://sheetdb.io/api/v1/gadelfd8mgqqh',
+   form: null
   };
   if (!CFG.enabled) return;
   if (CFG.until && new Date() > new Date(CFG.until + 'T23:59:59')) return;
@@ -73,21 +72,31 @@
   var KEY = 'ap_name_v' + CFG.version;
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  function configured() { return !!(CFG.endpoint || (CFG.form && CFG.form.url && CFG.form.name)); }
+  function configured() {
+  return !!CFG.endpoint;
+  }
 
   function post(rec) {
-    var jobs = [];
-    if (CFG.endpoint) {
-      jobs.push(fetch(CFG.endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(rec) }));
+  return fetch(CFG.endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      data: [{
+        name: rec.name,
+        id: rec.id,
+        time: rec.time,
+        page: rec.page
+      }]
+    })
+  }).then(function (response) {
+    if (!response.ok) {
+      throw new Error('SheetDB error: ' + response.status);
     }
-    if (CFG.form && CFG.form.url && CFG.form.name) {
-      var b = new URLSearchParams();
-      b.append(CFG.form.name, rec.name);
-      if (CFG.form.id) b.append(CFG.form.id, rec.id);
-      jobs.push(fetch(CFG.form.url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: b.toString() }));
-    }
-    return Promise.all(jobs);
-  }
+    return response.json();
+  });
+}
   // If the phone is offline the name waits and is sent the next time the app opens.
   function flush() {
     if (!configured()) return;
