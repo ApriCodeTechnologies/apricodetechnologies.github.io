@@ -1,12 +1,13 @@
-/* Shared by every ApriCode page: auto-updates, "new version" banner, install button. */
+
+/* Shared by every ApriCode page: auto-updates, new version banner, install button. */
 (function () {
   if (!('serviceWorker' in navigator)) return;
   var had = !!navigator.serviceWorker.controller;
 
-  // A new service worker just took over: offer a one-tap reload.
   navigator.serviceWorker.addEventListener('controllerchange', function () {
     if (!had) { had = true; return; }
     if (document.getElementById('upd')) return;
+
     var d = document.createElement('div');
     d.id = 'upd';
     d.setAttribute('role', 'button');
@@ -18,106 +19,205 @@
 
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (r) {
-      // Look for a new version whenever the app is opened again, and every 10 minutes.
-      document.addEventListener('visibilitychange', function () { if (!document.hidden) r.update(); });
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) r.update();
+      });
       setInterval(function () { r.update(); }, 600000);
     }).catch(function () {});
   });
 })();
 
-/* Install button (only on pages that have #inst, i.e. the home page). */
+/* Install button */
 (function () {
   var b = document.getElementById('inst'), h = document.getElementById('insthint');
   if (!b) return;
+
   var done = false, dip = null;
   try { done = localStorage.getItem('ff_inst') === '1'; } catch (x) {}
-  function mark() { try { localStorage.setItem('ff_inst', '1'); } catch (x) {} }
-  var standalone = window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+
+  function mark() {
+    try { localStorage.setItem('ff_inst', '1'); } catch (x) {}
+  }
+
+  var standalone = window.navigator.standalone ||
+    (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+
   if (standalone) { done = true; mark(); }
+
   window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault(); dip = e; if (!done) b.style.display = 'block';
+    e.preventDefault();
+    dip = e;
+    if (!done) b.style.display = 'block';
   });
+
   b.addEventListener('click', function () {
     if (!dip) return;
     dip.prompt();
     dip.userChoice.then(function (r) {
-      dip = null; b.style.display = 'none';
+      dip = null;
+      b.style.display = 'none';
       if (r && r.outcome === 'accepted') mark();
     }, function () {});
   });
-  window.addEventListener('appinstalled', function () { b.style.display = 'none'; mark(); });
+
+  window.addEventListener('appinstalled', function () {
+    b.style.display = 'none';
+    mark();
+  });
+
   var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   if (ios && !standalone && h) h.style.display = 'block';
 })();
 
-/* ------------------------------------------------------------------
-   TEMPORARY NAME GATE
-   Every player must write a name before playing. The name is kept on the
-   phone (so it is asked only once) and sent to the place you choose below.
-   - Change "version" to ask EVERYONE for their name again.
-   - Set enabled to false (or an end date in "until") to switch it off.
-------------------------------------------------------------------- */
+/* ApriCode name gate and player information */
 (function () {
   var CFG = {
-    enabled: true,   // false = never ask for a name
-    until: '',       // optional last day, e.g. '2026-12-31' (nobody is asked after it)
-    version: 3,      // change this number (2 -> 3 ...) and every player is asked again
-    
-   endpoint: 'aHR0cHM6Ly9zaGVldGRiLmlvL2FwaS92MS9nYWRlbGZkOG1ncXFo',
-   form: null
+    enabled: true,
+    until: '',
+    version: 1,
+
+    // Encoded SheetDB URL (not secure encryption)
+    endpoint: atob('aHR0cHM6Ly9zaGVldGRiLmlvL2FwaS92MS9nYWRlbGZkOG1ncXFo')
   };
+
   if (!CFG.enabled) return;
   if (CFG.until && new Date() > new Date(CFG.until + 'T23:59:59')) return;
 
   var KEY = 'ap_name_v' + CFG.version;
-  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  function get(k) {
+    try { return localStorage.getItem(k); } catch (e) { return null; }
+  }
+
+  function set(k, v) {
+    try { localStorage.setItem(k, v); } catch (e) {}
+  }
+
+  function getDevice() {
+    var ua = navigator.userAgent;
+
+    if (/ipad|tablet/i.test(ua) ||
+        (/android/i.test(ua) && !/mobile/i.test(ua))) return 'Tablet';
+
+    if (/mobile|iphone|ipod|android/i.test(ua)) return 'Mobile';
+
+    return 'Desktop';
+  }
+
+  function getBrowser() {
+    var ua = navigator.userAgent;
+
+    if (/Edg\//.test(ua)) return 'Edge';
+    if (/OPR\//.test(ua)) return 'Opera';
+    if (/Firefox\//.test(ua)) return 'Firefox';
+    if (/CriOS\//.test(ua)) return 'Chrome iOS';
+    if (/Chrome\//.test(ua)) return 'Chrome';
+    if (/Safari\//.test(ua)) return 'Safari';
+
+    return 'Other';
+  }
+
+  function getOS() {
+    var ua = navigator.userAgent;
+
+    if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+    if (/Android/.test(ua)) return 'Android';
+    if (/Windows/.test(ua)) return 'Windows';
+    if (/Mac OS X/.test(ua)) return 'macOS';
+    if (/Linux/.test(ua)) return 'Linux';
+
+    return 'Other';
+  }
+
+  function isInstalled() {
+    return !!(
+      navigator.standalone ||
+      (window.matchMedia &&
+      window.matchMedia('(display-mode: standalone)').matches)
+    );
+  }
+
+  // Collect exactly the nine requested fields.
+  function collect(name) {
+    return {
+      name: name,
+      time: new Date().toISOString(),
+      device: getDevice(),
+      browser: getBrowser(),
+      os: getOS(),
+      screen: screen.width + 'x' + screen.height,
+      language: navigator.language || '',
+      page: location.pathname,
+      installed: isInstalled() ? 'Yes' : 'No'
+    };
+  }
+
   function configured() {
-  return !!CFG.endpoint;
+    return !!CFG.endpoint;
   }
 
   function post(rec) {
-  return fetch(CFG.endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      data: [{
-        name: rec.name,
-        id: rec.id,
-        time: rec.time,
-        page: rec.page
-      }]
-    })
-  }).then(function (response) {
-    if (!response.ok) {
-      throw new Error('SheetDB error: ' + response.status);
-    }
-    return response.json();
-  });
-}
-  // If the phone is offline the name waits and is sent the next time the app opens.
+    return fetch(CFG.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        data: [rec]
+      })
+    }).then(function (response) {
+      if (!response.ok) {
+        throw new Error('SheetDB error: ' + response.status);
+      }
+      return response.json();
+    });
+  }
+
+  // Retry saved records when the phone comes online.
   function flush() {
     if (!configured()) return;
-    var list = []; try { list = JSON.parse(get('ap_pending') || '[]'); } catch (e) {}
+
+    var list = [];
+    try {
+      list = JSON.parse(get('ap_pending') || '[]');
+    } catch (e) {}
+
     if (!list.length) return;
+
     set('ap_pending', '[]');
+
     list.forEach(function (rec) {
       post(rec).catch(function () {
-        var p = []; try { p = JSON.parse(get('ap_pending') || '[]'); } catch (e) {}
-        p.push(rec); set('ap_pending', JSON.stringify(p));
+        var p = [];
+        try {
+          p = JSON.parse(get('ap_pending') || '[]');
+        } catch (e) {}
+
+        p.push(rec);
+        set('ap_pending', JSON.stringify(p));
       });
     });
   }
+
   function queue(rec) {
-    var p = []; try { p = JSON.parse(get('ap_pending') || '[]'); } catch (e) {}
-    p.push(rec); set('ap_pending', JSON.stringify(p)); flush();
+    var p = [];
+    try {
+      p = JSON.parse(get('ap_pending') || '[]');
+    } catch (e) {}
+
+    p.push(rec);
+    set('ap_pending', JSON.stringify(p));
+    flush();
   }
 
-  if (get(KEY)) { flush(); return; }
+  // Existing players are not asked again.
+  if (get(KEY)) {
+    flush();
+    return;
+  }
 
   var css = document.createElement('style');
+
   css.textContent =
     '#apgate{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;' +
     'background:linear-gradient(#ffe6d6,#ffc9aa 55%,#ffa987);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#3a1d12;-webkit-user-select:auto;user-select:auto;touch-action:auto}' +
@@ -131,32 +231,60 @@
     '#apgate button:active{transform:translateY(4px);box-shadow:0 1px 0 #3a1d12}' +
     '#apgate small{font-weight:600;color:#9a5a42;font-size:12px}' +
     '#aperr{min-height:18px;font-weight:800;font-size:14px;color:#d12b3c}';
+
   document.head.appendChild(css);
 
   var g = document.createElement('div');
   g.id = 'apgate';
   g.setAttribute('role', 'dialog');
   g.setAttribute('aria-modal', 'true');
+
   g.innerHTML =
     '<div class="c"><img src="logo.png" alt="ApriCode"><h2>Welcome! \uD83D\uDC4B</h2>' +
     '<p>Please write your name to start playing.</p>' +
     '<input id="apname" type="text" maxlength="30" placeholder="Your name" autocomplete="given-name" enterkeyhint="go">' +
     '<div id="aperr"></div><button id="apgo">Let\u2019s play</button>';
+
   document.body.appendChild(g);
 
-  var input = document.getElementById('apname'), err = document.getElementById('aperr');
-  // keep typing from triggering game keys (e.g. Space)
-  ['keydown', 'keyup', 'keypress'].forEach(function (t) { input.addEventListener(t, function (e) { e.stopPropagation(); }); });
+  var input = document.getElementById('apname');
+  var err = document.getElementById('aperr');
+
+  ['keydown', 'keyup', 'keypress'].forEach(function (t) {
+    input.addEventListener(t, function (e) {
+      e.stopPropagation();
+    });
+  });
 
   function go() {
-    var name = input.value.replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30);
-    if (name.length < 2) { err.textContent = 'Please write your name (at least 2 letters).'; input.focus(); return; }
-    var id = get('ap_id') || (Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
-    set('ap_id', id); set(KEY, name);
-    queue({ name: name, id: id, time: new Date().toISOString(), page: location.pathname });
-    g.remove(); css.remove();
+    var name = input.value
+      .replace(/[\u0000-\u001f<>]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 30);
+
+    if (name.length < 2) {
+      err.textContent = 'Please write your name (at least 2 letters).';
+      input.focus();
+      return;
+    }
+
+    set(KEY, name);
+
+    var rec = collect(name);
+    queue(rec);
+
+    g.remove();
+    css.remove();
   }
+
   document.getElementById('apgo').addEventListener('click', go);
-  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
-  setTimeout(function () { try { input.focus(); } catch (e) {} }, 300);
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') go();
+  });
+
+  setTimeout(function () {
+    try { input.focus(); } catch (e) {}
+  }, 300);
 })();
