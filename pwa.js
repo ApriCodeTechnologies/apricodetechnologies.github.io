@@ -62,8 +62,8 @@
     enabled: true,   // false = never ask for a name
     until: '',       // optional last day, e.g. '2026-12-31' (nobody is asked after it)
     version: 3,      // change this number (2 -> 3 ...) and every player is asked again
-    // Option A: any web address that accepts a JSON POST (Formspree, Firebase, your own server...)
-   endpoint: 'https://sheetdb.io/api/v1/gadelfd8mgqqh',
+    
+   endpoint: 'aHR0cHM6Ly9zaGVldGRiLmlvL2FwaS92MS9nYWRlbGZkOG1ncXFo',
    form: null
   };
   if (!CFG.enabled) return;
