@@ -65,7 +65,7 @@
     // Option A: any web address that accepts a JSON POST (Formspree, Firebase, your own server...)
     endpoint: '',
     // Option B: a Google Form (no Apps Script, no extra permissions needed)
-    form: { url: '', name: '', id: '' }   // url = the form's .../formResponse address, name/id = its entry.123456 field names
+    form: { url: 'https://docs.google.com/forms/d/e/1FAIpQLSeZiQmZJ-WEAdfj6Ul1H6ufKnvpxkZU8ejVaWGW8gjYHCTLjg/formResponse?usp=publish-editor', name: '', id: '' }   // url = the form's .../formResponse address, name/id = its entry.123456 field names
   };
   if (!CFG.enabled) return;
   if (CFG.until && new Date() > new Date(CFG.until + 'T23:59:59')) return;
